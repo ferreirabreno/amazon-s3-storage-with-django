@@ -28,6 +28,7 @@ cd storage_in_cloud
 ```shell
 pip3 install boto3
 pip3 install django-storages
+pip3 install django_rest_framework
 ```
 
 5. Create a new Django app:
@@ -40,24 +41,79 @@ python3 manage.py startapp amazon_s3_poc
 INSTALLED_APPS = [    ...    'storages']
 ```
 
-7. Create a storage backend in settings.py:
+7. Create a storage backend in settings.py and configure AWS credentials:
 ```py
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-```
-
-8. Configure AWS credentials:
-```txt
+AWS_STORAGE_BUCKET_NAME = <YOUR_BUCKET>
+AWS_S3_ENDPOINT_URL = <YOUR_AWS_ENDPOINT>
 AWS_ACCESS_KEY_ID = <YOUR_ACCESS_KEY_ID>
 AWS_SECRET_ACCESS_KEY = <YOUR_SECRET_ACCESS_KEY>
-AWS_STORAGE_BUCKET_NAME = <YOUR_BUCKET_NAME>
 AWS_S3_REGION_NAME = <YOUR_REGION_NAME>
+```
+
+## Supporting file upload in Django with Amazon S3 step-by-step
+
+1. Create model for storage file:
+```py
+from django.db import models
+
+class File(models.Model):
+    file = models.FileField(upload_to='my-bucket/files/')
+    description = models.CharField(max_length=255, blank=True)
+```
+
+2. Create serializer for model:
+```py
+from rest_framework import serializers
+from .models import File
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ['file', 'description']
+```
+
+3. Create view in app:
+```py
+from rest_framework import viewsets
+from .models import File
+from .serializers import FileSerializer
+
+class FileViewSet(viewsets.ModelViewSet):
+    queryset = File.objects.all()
+    serializer_class = FileSerializer
+```
+
+4. Include url in `urls.py` in project folder:
+```py
+from django.urls import (path, include)
+from src import views
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'files', views.FileViewSet)
+
+urlpatterns = [
+    path('api/', include(router.urls)),
+]
+```
+
+5. Execute db migrations for new model:
+```shell
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
+
+6. Run server:
+```shell
+python3 manage.py runserver
 ```
 
 # TODO
 
-- [ ] Configure django project
-- [ ] Configure django application
-- [ ] Install AWS python SDK Boto3 dependency
-- [ ] Install django storages dependency
-- [ ] Create a docker-compose.yml with localstack
-- [ ] Make an view for receive file and save
+- [x] Configure django project
+- [x] Configure django application
+- [x] Install AWS python SDK Boto3 dependency
+- [x] Install django storages dependency
+- [x] Create a docker-compose.yml with localstack
+- [x] Make an view for receive file and save
