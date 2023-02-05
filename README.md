@@ -1,5 +1,3 @@
-# What is Amazon S3?
-
 # What is Django?
 
 Django is a high-level Python web framework that enables the rapid development of secure and maintainable websites. It follows the Model-View-Template (MVT) architectural pattern and provides a rich set of tools and libraries to simplify the development of dynamic web applications. Django comes with built-in features such as URL routing, template engine, ORM, and more, that help developers build complex web applications in less time and with less code. It also follows a strict security model and provides robust features for user authentication and authorization, making it an ideal choice for building secure web applications.
